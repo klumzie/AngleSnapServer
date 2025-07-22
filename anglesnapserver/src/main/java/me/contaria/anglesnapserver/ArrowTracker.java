@@ -14,7 +14,7 @@ public class ArrowTracker {
     private static final Map<UUID, List<NbtCompound>> playerArrowData = new HashMap<>();
 
     public ArrowTracker() {
-        // Save arrows on player disconnect
+    
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             ServerPlayerEntity player = handler.player;
             UUID uuid = player.getUuid();
@@ -28,7 +28,7 @@ public class ArrowTracker {
                     e -> e.getOwner() != null && e.getOwner().getUuid().equals(uuid))
             ) {
                 NbtCompound tag = new NbtCompound();
-                entity.saveSelfNbt(tag);  // ✅ FIXED: Correct for 1.21.6
+                entity.saveSelfNbt(tag);  
                 arrows.add(tag);
                 entity.discard();
             }
@@ -36,7 +36,7 @@ public class ArrowTracker {
             playerArrowData.put(uuid, arrows);
         });
 
-        // Restore arrows on player reconnect
+       
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.player;
             UUID uuid = player.getUuid();
@@ -45,9 +45,9 @@ public class ArrowTracker {
             List<NbtCompound> arrows = playerArrowData.remove(uuid);
             if (arrows != null) {
                 for (NbtCompound tag : arrows) {
-                    ArrowEntity arrow = new ArrowEntity(world, player);  // ✅ FIXED: Correct constructor
+                    ArrowEntity arrow = new ArrowEntity(world, player);  
                     arrow.setPosition(player.getX(), player.getY(), player.getZ());
-                    arrow.readNbt(tag);                                  // ✅ FIXED: Correct for 1.21.6
+                    arrow.readNbt(tag);                                  
                     world.spawnEntity(arrow);
                 }
             }

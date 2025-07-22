@@ -14,38 +14,42 @@ public class ArrowTracker {
     private static final Map<UUID, List<NbtCompound>> playerArrowData = new HashMap<>();
 
     public ArrowTracker() {
-        // Save arrows on logout
+        // Save arrows on player disconnect
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             ServerPlayerEntity player = handler.player;
             UUID uuid = player.getUuid();
             ServerWorld world = (ServerWorld) player.getWorld();
 
             List<NbtCompound> arrows = new ArrayList<>();
-            for (var entity : world.getEntitiesByClass(PersistentProjectileEntity.class, player.getBoundingBox().expand(128),
-                    e -> e.getOwner() != null && e.getOwner().getUuid().equals(uuid))) {
+
+            // Find all arrows owned by the player
+            for (PersistentProjectileEntity entity : world.getEntitiesByClass(
+                    PersistentProjectileEntity.class,
+                    player.getBoundingBox().expand(128),
+                    e -> e.getOwner() != null && e.getOwner().getUuid().equals(uuid))
+            ) {
                 NbtCompound tag = new NbtCompound();
-                entity.writeNbt(tag);  // ✅ FIXED
+                entity.writeNbt(tag); // Includes "Owner", "HasBeenShot", etc.
                 arrows.add(tag);
-                entity.discard();
+                entity.discard(); // Remove from world
             }
 
             playerArrowData.put(uuid, arrows);
         });
 
-        // Restore arrows on login
+        // Restore arrows on player reconnect
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.player;
             UUID uuid = player.getUuid();
             ServerWorld world = (ServerWorld) player.getWorld();
 
-            if (playerArrowData.containsKey(uuid)) {
-                for (NbtCompound tag : playerArrowData.get(uuid)) {
-                    ArrowEntity arrow = new ArrowEntity(world, player.getX(), player.getY(), player.getZ());  // ✅ FIXED
-                    arrow.readCustomDataFromNbt(tag);  // ✅ FIXED
-                    arrow.setOwner(player);  // reassign shooter
+            List<NbtCompound> arrows = playerArrowData.remove(uuid);
+            if (arrows != null) {
+                for (NbtCompound tag : arrows) {
+                    ArrowEntity arrow = new ArrowEntity(world, player.getX(), player.getY(), player.getZ());
+                    arrow.readCustomDataFromNbt(tag); // Restores owner and flight status
                     world.spawnEntity(arrow);
                 }
-                playerArrowData.remove(uuid);
             }
         });
     }

@@ -16,7 +16,6 @@ public class ArrowTracker {
 
     public void register() {
 
-        // Save player arrows when disconnecting
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             ServerPlayerEntity player = handler.player;
             UUID uuid = player.getUuid();
@@ -32,9 +31,9 @@ public class ArrowTracker {
 
             for (PersistentProjectileEntity projectile : projectiles) {
                 NbtCompound nbt = new NbtCompound();
-                projectile.writeNbt(nbt); // ✅ Works in 1.21.6
+                projectile.saveNbt(nbt); // ✅ Correct in 1.21.6
                 arrowsToSave.add(nbt);
-                projectile.discard(); // Remove from world
+                projectile.discard();
             }
 
             if (!arrowsToSave.isEmpty()) {
@@ -42,7 +41,6 @@ public class ArrowTracker {
             }
         });
 
-        // Restore arrows on login
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.player;
             UUID uuid = player.getUuid();
@@ -52,11 +50,12 @@ public class ArrowTracker {
 
             if (arrowsToRestore != null) {
                 for (NbtCompound nbt : arrowsToRestore) {
-                    EntityType.getEntityFromNbt(nbt, world).ifPresent(entity -> {
+                    EntityType.loadEntityWithPassengers(nbt, world, entity -> {
                         if (entity instanceof PersistentProjectileEntity projectile) {
-                            projectile.setOwner(player); // Re-assign owner
+                            projectile.setOwner(player); // Restore owner
                         }
                         world.spawnEntity(entity);
+                        return entity;
                     });
                 }
             }

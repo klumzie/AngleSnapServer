@@ -1,71 +1,39 @@
 plugins {
-    id 'fabric-loom' version '1.11-SNAPSHOT'
+    id 'fabric-loom' version '1.5.6' // use stable, not snapshot
     id 'maven-publish'
 }
 
-version = project.mod_version
-group = project.maven_group
+group = 'me.contaria'
+version = '0.1.0'
 
 base {
-    archivesName = project.archives_base_name
+    archivesName = 'anglesnap-server'
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
 
 repositories {
-    // Add repositories to retrieve artifacts from
-    maven { url = "https://maven.fabricmc.net/" }
     mavenCentral()
+    maven { url = 'https://maven.fabricmc.net/' }
 }
 
 dependencies {
-    // The version of Minecraft we're developing for.
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-
-    // The Yarn mappings for Minecraft.
-    mappings loom.layered() {
-        officialMojangMappings()
-    }
-
-    // The Fabric loader.
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-    // The Fabric API.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.100.3+1.21"
-}
-
-processResources {
-    inputs.property "version", project.version
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
-}
-
-// Configure Java compilation settings
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-    withSourcesJar()
+    minecraft "com.mojang:minecraft:1.21.6"
+    mappings "net.fabricmc:yarn:1.21.6+build.1:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.16.10"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.128.0+1.21.6"
 }
 
 loom {
     splitEnvironmentSourceSets()
-
-    mods {
-        "anglesnap-server" {
-            sourceSet sourceSets.main
-        }
-    }
 }
 
-// Configure the maven publishing settings
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
-        // You can configure a repository to publish to here
+processResources {
+    inputs.property "version", project.version
+    filteringCharset "UTF-8"
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
     }
 }

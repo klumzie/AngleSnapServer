@@ -24,7 +24,6 @@ public class ArrowTracker {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             ServerPlayerEntity player = handler.player;
             UUID uuid = player.getUuid();
-            // In 1.21.6, player.getWorld() returns a ServerWorld directly in this context.
             ServerWorld world = player.getWorld();
 
             List<NbtCompound> arrowsToSave = new ArrayList<>();
@@ -36,7 +35,7 @@ public class ArrowTracker {
 
             for (PersistentProjectileEntity projectile : projectiles) {
                 NbtCompound nbt = new NbtCompound();
-                // This is the correct method for 1.21.6
+                // Correct method for 1.21.6
                 projectile.saveNbt(nbt);
                 arrowsToSave.add(nbt);
                 projectile.discard();
@@ -56,8 +55,7 @@ public class ArrowTracker {
 
             if (arrowsToRestore != null) {
                 for (NbtCompound nbt : arrowsToRestore) {
-                    // This is the correct method for 1.21.6.
-                    // Note: It takes a 'World', and ServerWorld is a type of World.
+                    // Correct method for 1.21.6
                     Optional<Entity> optionalEntity = EntityType.load(world, nbt);
 
                     optionalEntity.ifPresent(entity -> {

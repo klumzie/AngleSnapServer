@@ -23,8 +23,8 @@ public class ArrowTracker {
             List<NbtCompound> arrows = new ArrayList<>();
             for (var entity : world.getEntitiesByClass(PersistentProjectileEntity.class, player.getBoundingBox().expand(128),
                     e -> e.getOwner() != null && e.getOwner().getUuid().equals(uuid))) {
-
-                NbtCompound tag = entity.createNbtWithId(world); 
+                NbtCompound tag = new NbtCompound();
+                entity.writeNbt(tag);  // ✅ FIXED
                 arrows.add(tag);
                 entity.discard();
             }
@@ -40,10 +40,9 @@ public class ArrowTracker {
 
             if (playerArrowData.containsKey(uuid)) {
                 for (NbtCompound tag : playerArrowData.get(uuid)) {
-                    ArrowEntity arrow = new ArrowEntity(world, player);  
-                    arrow.readNbt(tag);                                 
-                    arrow.setOwner(player);
-                    arrow.setPosition(player.getX(), player.getY(), player.getZ());
+                    ArrowEntity arrow = new ArrowEntity(world, player.getX(), player.getY(), player.getZ());  // ✅ FIXED
+                    arrow.readCustomDataFromNbt(tag);  // ✅ FIXED
+                    arrow.setOwner(player);  // reassign shooter
                     world.spawnEntity(arrow);
                 }
                 playerArrowData.remove(uuid);

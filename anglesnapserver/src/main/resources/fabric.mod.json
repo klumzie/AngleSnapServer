@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "anglesnap-server",
+  "version": "${version}",
+  "name": "AngleSnap Server Tracker",
+  "description": "Tracks and restores player arrows across sessions.",
+  "authors": ["you"],
+  "license": "MIT",
+  "environment": "server",
+  "entrypoints": {
+    "server": [
+      "me.contaria.anglesnapserver.AngleSnapServer"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "minecraft": "1.21.6",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

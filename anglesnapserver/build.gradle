@@ -13,7 +13,6 @@ base {
 repositories {
     // Add repositories to retrieve artifacts from
     maven { url = "https://maven.fabricmc.net/" }
-    maven { url = "https://maven.parchmentmc.org" }
     mavenCentral()
 }
 
@@ -24,13 +23,12 @@ dependencies {
     // The Yarn mappings for Minecraft.
     mappings loom.layered() {
         officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-1.21:2024.07.14@zip")
     }
 
     // The Fabric loader.
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // The Fabric API. This is the correct dependency for 1.21.x.
+    // The Fabric API.
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.100.3+1.21"
 }
 

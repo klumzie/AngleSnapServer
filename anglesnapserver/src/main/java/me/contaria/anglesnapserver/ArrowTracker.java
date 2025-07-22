@@ -24,9 +24,9 @@ public class ArrowTracker {
             for (var entity : world.getEntitiesByClass(PersistentProjectileEntity.class, player.getBoundingBox().expand(128),
                     e -> e.getOwner() != null && e.getOwner().getUuid().equals(uuid))) {
                 NbtCompound tag = new NbtCompound();
-                entity.saveSelfNbt(tag);
+                entity.writeNbt(tag);  // ✅ works in 1.21.6
                 arrows.add(tag);
-                entity.discard(); // remove arrow from world
+                entity.discard();
             }
 
             playerArrowData.put(uuid, arrows);
@@ -40,10 +40,9 @@ public class ArrowTracker {
 
             if (playerArrowData.containsKey(uuid)) {
                 for (NbtCompound tag : playerArrowData.get(uuid)) {
-                    ArrowEntity arrow = new ArrowEntity(world, player); // Use concrete class
-                    arrow.readNbt(tag);
+                    ArrowEntity arrow = new ArrowEntity(world, player.getX(), player.getY(), player.getZ());  // ✅ correct constructor
+                    arrow.readNbt(tag);  // ✅ correct in 1.21.6
                     arrow.setOwner(player);
-                    arrow.setPosition(player.getX(), player.getY(), player.getZ());
                     world.spawnEntity(arrow);
                 }
                 playerArrowData.remove(uuid);

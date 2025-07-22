@@ -7,14 +7,8 @@ import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World; // Required for EntityType.load
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class ArrowTracker {
 
@@ -34,9 +28,7 @@ public class ArrowTracker {
             );
 
             for (PersistentProjectileEntity projectile : projectiles) {
-                NbtCompound nbt = new NbtCompound();
-                // Correct method for 1.21.6
-                projectile.saveNbt(nbt);
+                NbtCompound nbt = projectile.createNbtWithId(world); // ✅ Correct method
                 arrowsToSave.add(nbt);
                 projectile.discard();
             }
@@ -48,24 +40,4 @@ public class ArrowTracker {
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.player;
-            UUID uuid = player.getUuid();
-            ServerWorld world = player.getWorld();
-
-            List<NbtCompound> arrowsToRestore = playerArrowData.remove(uuid);
-
-            if (arrowsToRestore != null) {
-                for (NbtCompound nbt : arrowsToRestore) {
-                    // Correct method for 1.21.6
-                    Optional<Entity> optionalEntity = EntityType.load(world, nbt);
-
-                    optionalEntity.ifPresent(entity -> {
-                        if (entity instanceof PersistentProjectileEntity) {
-                            ((PersistentProjectileEntity) entity).setOwner(player);
-                        }
-                        world.spawnEntity(entity);
-                    });
-                }
-            }
-        });
-    }
-}
+            UUID uuid =

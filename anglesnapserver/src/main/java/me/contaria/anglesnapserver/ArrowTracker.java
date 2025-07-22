@@ -22,16 +22,15 @@ public class ArrowTracker {
 
             List<NbtCompound> arrows = new ArrayList<>();
 
-            // Find all arrows owned by the player
             for (PersistentProjectileEntity entity : world.getEntitiesByClass(
                     PersistentProjectileEntity.class,
                     player.getBoundingBox().expand(128),
                     e -> e.getOwner() != null && e.getOwner().getUuid().equals(uuid))
             ) {
                 NbtCompound tag = new NbtCompound();
-                entity.writeNbt(tag); // Includes "Owner", "HasBeenShot", etc.
+                entity.saveSelfNbt(tag);  // ✅ FIXED: Correct for 1.21.6
                 arrows.add(tag);
-                entity.discard(); // Remove from world
+                entity.discard();
             }
 
             playerArrowData.put(uuid, arrows);
@@ -46,8 +45,9 @@ public class ArrowTracker {
             List<NbtCompound> arrows = playerArrowData.remove(uuid);
             if (arrows != null) {
                 for (NbtCompound tag : arrows) {
-                    ArrowEntity arrow = new ArrowEntity(world, player.getX(), player.getY(), player.getZ());
-                    arrow.readCustomDataFromNbt(tag); // Restores owner and flight status
+                    ArrowEntity arrow = new ArrowEntity(world, player);  // ✅ FIXED: Correct constructor
+                    arrow.setPosition(player.getX(), player.getY(), player.getZ());
+                    arrow.readNbt(tag);                                  // ✅ FIXED: Correct for 1.21.6
                     world.spawnEntity(arrow);
                 }
             }

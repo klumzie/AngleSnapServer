@@ -31,9 +31,9 @@ public class ArrowTracker {
 
             for (PersistentProjectileEntity projectile : projectiles) {
                 NbtCompound nbt = new NbtCompound();
-                projectile.saveNbt(nbt); // ✅ Correct in 1.21.6
+                projectile.writeNbt(nbt); // ✅ Correct
                 arrowsToSave.add(nbt);
-                projectile.discard();
+                projectile.discard(); // Despawn original arrow
             }
 
             if (!arrowsToSave.isEmpty()) {
@@ -50,13 +50,11 @@ public class ArrowTracker {
 
             if (arrowsToRestore != null) {
                 for (NbtCompound nbt : arrowsToRestore) {
-                    EntityType.loadEntityWithPassengers(nbt, world, entity -> {
-                        if (entity instanceof PersistentProjectileEntity projectile) {
-                            projectile.setOwner(player); // Restore owner
-                        }
-                        world.spawnEntity(entity);
-                        return entity;
-                    });
+                    Entity entity = EntityType.loadEntityFromNbt(nbt, world);
+                    if (entity instanceof PersistentProjectileEntity projectile) {
+                        projectile.setOwner(player);
+                    }
+                    world.spawnEntity(entity);
                 }
             }
         });
